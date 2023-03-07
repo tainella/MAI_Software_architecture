@@ -3,7 +3,7 @@
 -->
 ```plantuml
 @startuml 
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://github.com/tainella/MAI_Software_architecture/blob/master/context.puml
 
 Person(admin, "Администратор")
 Person(moderator, "Модератор")
