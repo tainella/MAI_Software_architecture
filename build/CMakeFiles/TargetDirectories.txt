@@ -1,0 +1,4 @@
+/home/tainella/MAI_Software_architecture/build/CMakeFiles/hl_mai_lab_01.dir
+/home/tainella/MAI_Software_architecture/build/CMakeFiles/other_service.dir
+/home/tainella/MAI_Software_architecture/build/CMakeFiles/edit_cache.dir
+/home/tainella/MAI_Software_architecture/build/CMakeFiles/rebuild_cache.dir
