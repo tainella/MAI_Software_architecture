@@ -154,9 +154,7 @@ namespace database
         }
         catch (Poco::Data::MySQL::StatementException &e)
         {
-
             std::cout << "statement:" << e.what() << std::endl;
-            
         }
         return {};
     }
@@ -212,9 +210,16 @@ namespace database
         }
     }
 
+    int Package::delete_package(long id) {
+
+    }
+
+    std::optional<Delivery> Package::get_delivery_data(long id) {
+        
+    }
+
     void Package::save_to_mysql()
     {
-
         try
         {
             Poco::Data::Session session = database::Database::get().create_session();
