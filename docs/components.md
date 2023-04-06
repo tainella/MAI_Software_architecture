@@ -19,8 +19,8 @@ System_Ext(web_site, "Клиентский веб-сайт", "HTML, CSS, JavaScr
 
 System_Boundary(conference_site, "Сайт сервиса доставки") {
    Container(client_service, "Сервис авторизации", "C++", "Сервис управления пользователями", $tags = "microService")    
-   Container(post_service, "Сервис доставок", "C++", "Сервис управления доставками", $tags = "microService") 
-   Container(blog_service, "Сервис посылок", "C++", "Сервис управления посылками", $tags = "microService")
+   Container(delivery_service, "Сервис доставок", "C++", "Сервис управления доставками", $tags = "microService") 
+   Container(package_service, "Сервис посылок", "C++", "Сервис управления посылками", $tags = "microService")
    Container(error_service, "Сервис мониторинга ошибок", "C++", "Сервис мониторинга ошибок", $tags = "microService")
    Container(payment_service, "Сервис оплаты", "C++", "Сервис оплаты доставки или иной услуги", $tags = "microService")   
    ContainerDb(db, "База данных", "MySQL", "Хранение данных о посылках, доставках, оплате и пользователях", $tags = "storage")
@@ -34,10 +34,10 @@ Rel(web_site, client_service, "Работа с пользователями", "l
 Rel(client_service, db, "INSERT/SELECT/UPDATE", "SQL")
 
 Rel(web_site, post_service, "Работа с доставками", "localhost/deliv")
-Rel(post_service, db, "INSERT/SELECT/UPDATE", "SQL")
+Rel(delivery_service, db, "INSERT/SELECT/UPDATE", "SQL")
 
 Rel(web_site, blog_service, "Работа с посылками", "localhost/pack")
-Rel(blog_service, db, "INSERT/SELECT/UPDATE", "SQL")
+Rel(package_service, db, "INSERT/SELECT/UPDATE", "SQL")
 
 Rel(web_site, payment_service, "Работа с оплатой доставок", "localhost/payment")
 Rel(payment_service, db, "INSERT/SELECT/UPDATE", "SQL")
