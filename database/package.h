@@ -25,11 +25,12 @@ namespace database
             long get_id() const;
             long get_user_id() const;
             long get_delivery_id() const;
-            int &get_weight() const;
-            int &get_volume() const;
-            bool &get_is_fragile() const;
+            int get_weight() const;
+            int get_volume() const;
+            bool get_is_fragile() const;
             const std::string &get_contains() const;
 
+            //для редактирования
             long& id();
             long& user_id();
             long& delivery_id();
