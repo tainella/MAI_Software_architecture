@@ -82,14 +82,12 @@ namespace database
             Poco::Data::Session session = database::Database::get().create_session();
             Poco::Data::Statement select(session);
             Delivery a;
-            select << "SELECT id, user_id, delivery_id, weight, volume, is_fragile, contains  FROM User where id=?",
+            select << "SELECT id, login_sender, login_receiver, adress, datetime FROM Delivery where id=?",
                 into(a._id),
-                into(a._user_id),
-                into(a._delivery_id),
-                into(a._weight),
-                into(a._volume),
-                into(a._is_fragile),
-                into(a._contains),
+                into(a._login_sender),
+                into(a._login_receiver),
+                into(a._adress),
+                into(a._datetime),
                 use(id),
                 range(0, 1); //  iterate over result set one row at a time
 
@@ -111,5 +109,205 @@ namespace database
         return {};
     }
 
+    std::vector<Delivery> Delivery::read_by_reciever(std::string login_receiver) {
+        try
+        {
+            Poco::Data::Session session = database::Database::get().create_session();
+            Poco::Data::Statement select(session);
+            Delivery a;
+            std::vector<Delivery> result;
+
+            select << "SELECT id, login_sender, login_receiver, adress, datetime FROM Delivery where login_receiver=?",
+                into(a._id),
+                into(a._login_sender),
+                into(a._login_receiver),
+                into(a._adress),
+                into(a._datetime),
+                use(login_receiver),
+                range(0, 1); //  iterate over result set one row at a time
+
+            while (!select.done())
+            {
+                if (select.execute())
+                    result.push_back(a);
+            }
+            return result;
+        }
+
+        catch (Poco::Data::MySQL::ConnectionException &e)
+        {
+            std::cout << "connection:" << e.what() << std::endl;
+        }
+        catch (Poco::Data::MySQL::StatementException &e)
+        {
+
+            std::cout << "statement:" << e.what() << std::endl;
+            
+        }
+        return {};
+    }
+
+    std::vector<Delivery> Delivery::read_by_sender(std::string login_sender) {
+        try
+        {
+            Poco::Data::Session session = database::Database::get().create_session();
+            Poco::Data::Statement select(session);
+            Delivery a;
+            std::vector<Delivery> result;
+
+            select << "SELECT id, login_sender, login_receiver, adress, datetime FROM Delivery where login_sender=?",
+                into(a._id),
+                into(a._login_sender),
+                into(a._login_receiver),
+                into(a._adress),
+                into(a._datetime),
+                use(login_sender),
+                range(0, 1); //  iterate over result set one row at a time
+
+            while (!select.done())
+            {
+                if (select.execute())
+                    result.push_back(a);
+            }
+            return result;
+        }
+
+        catch (Poco::Data::MySQL::ConnectionException &e)
+        {
+            std::cout << "connection:" << e.what() << std::endl;
+        }
+        catch (Poco::Data::MySQL::StatementException &e)
+        {
+
+            std::cout << "statement:" << e.what() << std::endl;
+            
+        }
+        return {};
+    }
+
+    std::vector<Delivery> Delivery::read_all() {
+        try
+        {
+            Poco::Data::Session session = database::Database::get().create_session();
+            Poco::Data::Statement select(session);
+            Delivery a;
+            std::vector<Delivery> result;
+
+            select << "SELECT id, login_sender, login_receiver, adress, datetime FROM Delivery",
+                into(a._id),
+                into(a._login_sender),
+                into(a._login_receiver),
+                into(a._adress),
+                into(a._datetime),
+                range(0, 1); //  iterate over result set one row at a time
+
+            while (!select.done())
+            {
+                if (select.execute())
+                    result.push_back(a);
+            }
+            return result;
+        }
+
+        catch (Poco::Data::MySQL::ConnectionException &e)
+        {
+            std::cout << "connection:" << e.what() << std::endl;
+        }
+        catch (Poco::Data::MySQL::StatementException &e)
+        {
+
+            std::cout << "statement:" << e.what() << std::endl;
+            
+        }
+        return {};
+    }
+
+    std::vector<Package> Delivery::get_packages(long id) {
+
+    }
+
+    int Delivery::delete_delivery(long id) {
+
+    };
+
+    void Delivery::save_to_mysql()
+    {
+        try
+        {
+            Poco::Data::Session session = database::Database::get().create_session();
+            Poco::Data::Statement insert(session);
+
+            insert << "INSERT INTO Delivery (id, login_sender, login_receiver, adress, datetime) VALUES(?, ?, ?, ?, ?)",
+                use(_id),
+                use(_login_sender),
+                use(_login_receiver),
+                use(_adress),
+                use(_datetime),
+            insert.execute();
+
+            Poco::Data::Statement select(session);
+            select << "SELECT LAST_INSERT_ID()",
+                into(_id),
+                range(0, 1); //  iterate over result set one row at a time
+
+            if (!select.done())
+            {
+                select.execute();
+            }
+            std::cout << "inserted:" << _id << std::endl;
+        }
+        catch (Poco::Data::MySQL::ConnectionException &e)
+        {
+            std::cout << "connection:" << e.what() << std::endl;
+            throw;
+        }
+        catch (Poco::Data::MySQL::StatementException &e)
+        {
+
+            std::cout << "statement:" << e.what() << std::endl;
+            throw;
+        }
+    }
+
+    long Delivery::get_id() const {
+        return _id;
+    };
+
+    const std::string &Delivery::get_login_sender() const {
+        return _login_sender;
+    };
+
+    const std::string &Delivery::get_login_receiver() const {
+        return _login_receiver;
+    };
+
+    const std::string &Delivery::get_adress() const {
+        return _adress;
+    };
+
+    const std::string &Delivery::get_datetime() const {
+        return _datetime;
+    };
+
+
+    long &Delivery::id() {
+        return _id;
+    };
+
+    std::string &Delivery::login_sender(){
+        return _login_sender;
+    };
+
+    std::string &Delivery::login_receiver() {
+        return _login_receiver;
+    };
+
+    std::string &Delivery::adress() {
+        return _adress;
+    };
+
+    std::string &Delivery::datetime() {
+        return _datetime;
+    };
 
 }

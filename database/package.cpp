@@ -92,7 +92,7 @@ namespace database
             Poco::Data::Session session = database::Database::get().create_session();
             Poco::Data::Statement select(session);
             Package a;
-            select << "SELECT id, user_id, delivery_id, weight, volume, is_fragile, contains  FROM User where id=?",
+            select << "SELECT id, user_id, delivery_id, weight, volume, is_fragile, contains  FROM Package where id=?",
                 into(a._id),
                 into(a._user_id),
                 into(a._delivery_id),
@@ -129,7 +129,7 @@ namespace database
             Poco::Data::Statement select(session);
             std::vector<Package> result;
             Package a;
-            select << "SELECT id, user_id, delivery_id, weight, volume, is_fragile, contains  FROM User where id=?",
+            select << "SELECT id, user_id, delivery_id, weight, volume, is_fragile, contains  FROM Package where user_id=?",
                 into(a._id),
                 into(a._user_id),
                 into(a._delivery_id),
@@ -167,7 +167,7 @@ namespace database
             Statement select(session);
             std::vector<Package> result;
             Package a;
-            select << "SELECT id, user_id, delivery_id, weight, volume, is_fragile, contains FROM User",
+            select << "SELECT id, user_id, delivery_id, weight, volume, is_fragile, contains FROM Package",
                 into(a._id),
                 into(a._user_id),
                 into(a._delivery_id),
@@ -225,7 +225,7 @@ namespace database
             Poco::Data::Session session = database::Database::get().create_session();
             Poco::Data::Statement insert(session);
 
-            insert << "INSERT INTO User (user_id, delivery_id, weight, volume, is_fragile, contains) VALUES(?, ?, ?, ?, ?, ?)",
+            insert << "INSERT INTO Package (user_id, delivery_id, weight, volume, is_fragile, contains) VALUES(?, ?, ?, ?, ?, ?)",
                 use(_user_id),
                 use(_delivery_id),
                 use(_weight),

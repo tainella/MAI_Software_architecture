@@ -17,23 +17,23 @@ namespace database
             std::string _login_receiver;
             std::string _adress;
             std::string _datetime;
+            Delivery();
 
         public:
             static Delivery fromJSON(const std::string & str);
-            // Delivery(); //?
 
             long get_id() const;
-            std::string &get_login_sender() const;
-            std::string &get_login_receiver() const;
-            std::string &get_adress() const;
-            std::string &get_datetime() const;
+            const std::string &get_login_sender() const;
+            const std::string &get_login_receiver() const;
+            const std::string &get_adress() const;
+            const std::string &get_datetime() const;
 
             //для редактирования
-            long &id;
-            std::string &login_sender;
-            std::string &login_receiver;
-            std::string &adress;
-            std::string &datetime;
+            long &id();
+            std::string &login_sender();
+            std::string &login_receiver();
+            std::string &adress();
+            std::string &datetime();
 
             static void init();
             static std::optional<Delivery> read_by_id(long id);

@@ -19,6 +19,7 @@ namespace database
             int _volume;
             bool _is_fragile;
             std::string _contains;
+            Package();
 
         public:
 
