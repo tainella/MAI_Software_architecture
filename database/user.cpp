@@ -187,6 +187,42 @@ namespace database
         }
     }
 
+    std::optional<User> User::read_by_login(std::string &login)
+    {
+        try
+        {
+            Poco::Data::Session session = database::Database::get().create_session();
+            Poco::Data::Statement select(session);
+            User a;
+            select << "SELECT id, first_name, last_name, email, title, login, password FROM User where login=?",
+                into(a._id),
+                into(a._first_name),
+                into(a._last_name),
+                into(a._email),
+                into(a._title),
+                into(a._login),
+                into(a._password),
+                use(login),
+                range(0, 1); //  iterate over result set one row at a time
+
+            select.execute();
+            Poco::Data::RecordSet rs(select);
+            if (rs.moveFirst()) return a;
+        }
+
+        catch (Poco::Data::MySQL::ConnectionException &e)
+        {
+            std::cout << "connection:" << e.what() << std::endl;
+        }
+        catch (Poco::Data::MySQL::StatementException &e)
+        {
+
+            std::cout << "statement:" << e.what() << std::endl;
+            
+        }
+        return {};
+    }
+
     std::vector<User> User::search(std::string first_name, std::string last_name)
     {
         try

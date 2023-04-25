@@ -1,0 +1,156 @@
+openapi: '3.0.0'
+info:
+  version: '1.0.0'
+  title: 'Arch Lab Example API'
+  description: API для сервиса посылок
+servers:
+  - url: http://localhost:8081
+    description: Example server
+paths:
+  /search_by_login:
+    get:
+      summary: Поиск посылок по логину создателя посылки
+      responses:
+        '200':
+          description: Найденные посылки
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/packages'
+        404:
+          description: Не удалось найти посылки
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /get_package_by_id:
+    get:
+      summary: Чтение информации о посылке по её id
+      parameters:
+      - name: id
+        description: Уникальный идентификатор посылки
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/package_id'
+      responses:
+        '200':
+          description: Найденный пользователь
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/package'
+        404:
+          description: Пользователь не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Неожиданная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /add_package:
+    post:
+      summary: Добавление новой посылки
+      parameters:
+      - name: name
+        description: Имя посылки
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: weight
+        description: Вес посылки
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: volume
+        description: Объем посылки
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: is_fragile
+        description: Флаг хрупкости посылки
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: contains
+        description: Флаг хрупкости посылки
+        in: query
+        required: true
+        schema:
+          type: string
+
+      responses:
+        '200':
+          description: Идентификатор, добавленной посылки
+          content:
+            application/json:
+              schema:
+                type: integer
+        404:
+          description: Ошибка добавления пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: Неожиданная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    package_id:
+      description: Уникальный идентификатор посылки
+      type: integer
+    packages:
+      type: array
+      items:
+        $ref: '#/components/schemas/package'
+    package:
+      type: object
+      required:
+        - id
+        - weight
+        - volume
+        - is_fragile
+        - contains
+      properties:
+        id:
+          $ref: '#/components/schemas/package_id'
+        weight:
+          type: integer
+        volume:
+          type: integer
+        is_fragile:
+          type: boolean
+        contains:
+          type: string
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          description: Сообщение о ошибке
+          type: string
+  securitySchemes:
+      basicAuth:     
+        type: http
+        scheme: basic
+security:
+  - basicAuth: []

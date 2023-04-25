@@ -13,8 +13,6 @@ namespace database
     class Package {
         private:
             long _id;
-            long _user_id;
-            long _delivery_id;
             int _weight;
             int _volume;
             bool _is_fragile;
@@ -26,8 +24,6 @@ namespace database
             static Package fromJSON(const std::string & str);
 
             long get_id() const;
-            long get_user_id() const;
-            long get_delivery_id() const;
             int get_weight() const;
             int get_volume() const;
             bool get_is_fragile() const;
@@ -35,8 +31,6 @@ namespace database
 
             //для редактирования
             long& id();
-            long& user_id();
-            long& delivery_id();
             int &weight();
             int &volume();
             bool &is_fragile();
