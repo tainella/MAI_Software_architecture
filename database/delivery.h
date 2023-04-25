@@ -17,9 +17,9 @@ namespace database
             std::string _login_receiver;
             std::string _adress;
             std::string _datetime;
-            Delivery();
 
         public:
+            Delivery();
             static Delivery fromJSON(const std::string & str);
 
             long get_id() const;

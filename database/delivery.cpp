@@ -223,11 +223,34 @@ namespace database
     }
 
     std::vector<Package> Delivery::get_packages(long id) {
+        Poco::Data::Session session = database::Database::get().create_session();
+        Statement select(session);
+        std::vector<Package> result;
 
+        
     }
 
     int Delivery::delete_delivery(long id) {
+        try {
+            Poco::Data::Session session = database::Database::get().create_session();
+            Statement delete_mysql(session);
 
+            delete_mysql << "DELETE FROM Delivery WHERE id=?",
+            use(id);
+            delete_mysql.execute();
+        }
+
+        catch (Poco::Data::MySQL::ConnectionException &e)
+        {
+            std::cout << "connection:" << e.what() << std::endl;
+            throw;
+        }
+        catch (Poco::Data::MySQL::StatementException &e)
+        {
+
+            std::cout << "statement:" << e.what() << std::endl;
+            throw;
+        }
     };
 
     void Delivery::save_to_mysql()
@@ -288,7 +311,6 @@ namespace database
     const std::string &Delivery::get_datetime() const {
         return _datetime;
     };
-
 
     long &Delivery::id() {
         return _id;

@@ -1,5 +1,6 @@
 #include "package.h"
 #include "database.h"
+#include "delivery.h"
 #include "../config/config.h"
 
 #include <Poco/Data/MySQL/Connector.h>
@@ -211,11 +212,56 @@ namespace database
     }
 
     int Package::delete_package(long id) {
+        try {
+            Poco::Data::Session session = database::Database::get().create_session();
+            Statement delete_mysql(session);
 
+            delete_mysql << "DELETE FROM Package WHERE id=?", use(id);
+            delete_mysql.execute();
+        }
+        catch (Poco::Data::MySQL::ConnectionException &e)
+        {
+            std::cout << "connection:" << e.what() << std::endl;
+            throw;
+        }
+        catch (Poco::Data::MySQL::StatementException &e)
+        {
+
+            std::cout << "statement:" << e.what() << std::endl;
+            throw;
+        }
     }
 
     std::optional<Delivery> Package::get_delivery_data(long id) {
-        
+        try {
+            Poco::Data::Session session = database::Database::get().create_session();
+            Statement select(session);
+            Delivery a;
+
+            select << "SELECT d.id, d.login_sender, d.login_receiver, d.adress, d.datetime FROM Delivery d LEFT JOIN Package p ON d.id = p.delivery_id where p.id=?",
+                into(a.id()),
+                into(a.login_sender()),
+                into(a.login_receiver()),
+                into(a.adress()),
+                into(a.datetime()),
+                use(id),
+                range(0, 1); //  iterate over result set one row at a time
+
+            select.execute();
+            Poco::Data::RecordSet rs(select);
+            if (rs.moveFirst()) return a;
+        }
+        catch (Poco::Data::MySQL::ConnectionException &e)
+        {
+            std::cout << "connection:" << e.what() << std::endl;
+            throw;
+        }
+        catch (Poco::Data::MySQL::StatementException &e)
+        {
+
+            std::cout << "statement:" << e.what() << std::endl;
+            throw;
+        }
     }
 
     void Package::save_to_mysql()
