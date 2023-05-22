@@ -4,7 +4,7 @@ info:
   title: 'Arch Lab Example API'
   description: API для сервиса посылок
 servers:
-  - url: http://localhost:8081
+  - url: http://localhost:8082
     description: Example server
 paths:
   /search_by_login:
@@ -16,7 +16,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/packages'
+                $ref: '#/components/schemas/users'
         404:
           description: Не удалось найти посылки
           content:
@@ -38,14 +38,14 @@ paths:
         in: query
         required: true
         schema:
-          $ref: '#/components/schemas/package_id'
+          $ref: '#/components/schemas/user_id'
       responses:
         '200':
           description: Найденный пользователь
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/package'
+                $ref: '#/components/schemas/user'
         404:
           description: Пользователь не найден
           content:
@@ -74,20 +74,8 @@ paths:
         required: true
         schema:
           type: string
-      - name: volume
-        description: Объем посылки
-        in: query
-        required: true
-        schema:
-          type: string
-      - name: is_fragile
-        description: Флаг хрупкости посылки
-        in: query
-        required: true
-        schema:
-          type: string
-      - name: contains
-        description: Флаг хрупкости посылки
+      - name: price
+        description: Цена посылки
         in: query
         required: true
         schema:
@@ -114,31 +102,31 @@ paths:
                 $ref: '#/components/schemas/Error'
 components:
   schemas:
-    package_id:
-      description: Уникальный идентификатор посылки
+    user_id:
+      description: Уникальный идентификатор пользователя
       type: integer
-    packages:
+    users:
       type: array
       items:
-        $ref: '#/components/schemas/package'
-    package:
+        $ref: '#/components/schemas/user'
+    user:
       type: object
       required:
         - id
+        - name
         - weight
-        - volume
-        - is_fragile
-        - contains
+        - price
+        - login
       properties:
         id:
-          $ref: '#/components/schemas/package_id'
+          $ref: '#/components/schemas/user_id'
+        name:
+          type: string
         weight:
-          type: integer
-        volume:
-          type: integer
-        is_fragile:
-          type: boolean
-        contains:
+          type: string
+        price:
+          type: string
+        login:
           type: string
     Error:
       type: object

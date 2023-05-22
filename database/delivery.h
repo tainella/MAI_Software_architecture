@@ -1,7 +1,5 @@
-#ifndef DELIVERY_H
-#define DELIVERY_H
-
-#include "package.h"
+#ifndef AUTHOR_H
+#define AUTHOR_H
 
 #include <string>
 #include <vector>
@@ -10,41 +8,44 @@
 
 namespace database
 {
-    class Delivery {
+    class Delivery{
         private:
             long _id;
-            std::string _login_sender;
-            std::string _login_receiver;
-            std::string _adress;
-            std::string _datetime;
+            std::string _recipient_name;
+            std::string _sender_name;
+            std::string _recipient_addres;
+            std::string _sender_addres;
+            std::string _date;
+            std::string _state;
 
         public:
-            Delivery();
+
             static Delivery fromJSON(const std::string & str);
 
-            long get_id() const;
-            const std::string &get_login_sender() const;
-            const std::string &get_login_receiver() const;
-            const std::string &get_adress() const;
-            const std::string &get_datetime() const;
+            long             get_id() const;
+            const std::string &get_recipient_name() const;
+            const std::string &get_sender_name() const;
+            const std::string &get_recipient_addres() const;
+            const std::string &get_sender_addres() const;
+            const std::string &get_date() const;
+            const std::string &get_state() const;
 
-            //для редактирования
-            long &id();
-            std::string &login_sender();
-            std::string &login_receiver();
-            std::string &adress();
-            std::string &datetime();
+            long&        id();
+            std::string &recipient_name();
+            std::string &sender_name();
+            std::string &recipient_addres();
+            std::string &sender_addres();
+            std::string &date();
+            std::string &state();
 
             static void init();
             static std::optional<Delivery> read_by_id(long id);
-            static std::vector<Delivery> read_by_reciever(std::string login_receiver);
-            static std::vector<Delivery> read_by_sender(std::string login_sender);
-            static std::vector<Delivery> read_all();
-            static std::vector<Package> get_packages(long id);
-            static int delete_delivery(long id);
-
+            static std::vector<Delivery> read_by_names(std::string recipient_name,std::string sender_name);
+            static std::optional<Delivery> set_state(long id, std::string state);
             void save_to_mysql();
+
             Poco::JSON::Object::Ptr toJSON() const;
+
     };
 }
 

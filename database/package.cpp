@@ -1,6 +1,5 @@
 #include "package.h"
 #include "database.h"
-#include "delivery.h"
 #include "../config/config.h"
 
 #include <Poco/Data/MySQL/Connector.h>
@@ -28,13 +27,11 @@ namespace database
             Poco::Data::Session session = database::Database::get().create_session();
             Statement create_stmt(session);
             create_stmt << "CREATE TABLE IF NOT EXISTS `Package` (`id` INT NOT NULL AUTO_INCREMENT,"
-                        << "`weight` INT NOT NULL"
-                        << "`volume` INT NOT NULL"
-                        << "is_fragile BOOL NOT NULL"
-                        << "`contains` VARCHAR(1024) NULL,"
-                        << "FOREIGN KEY (`user_id`) REFERENCES User (id)"
-                        << "FOREIGN KEY (`delivery_id`) REFERENCES Delivery (id)"
-                        << "PRIMARY KEY (`id`);",
+                        << "`name` VARCHAR(256) NOT NULL,"
+                        << "`weight` VARCHAR(256) NOT NULL,"
+                        << "`price` VARCHAR(256) NOT NULL,"
+                        << "`login` VARCHAR(256) NOT NULL,"
+                        << "PRIMARY KEY (`id`), KEY `lo` (`login`));",
                 now;
         }
 
@@ -56,30 +53,31 @@ namespace database
         Poco::JSON::Object::Ptr root = new Poco::JSON::Object();
 
         root->set("id", _id);
+        root->set("name", _name);
         root->set("weight", _weight);
-        root->set("volume", _volume);
-        root->set("is_fragile", _is_fragile);
-        root->set("contains", _contains);
+        root->set("price", _price);
+        root->set("login", _login);
 
         return root;
     }
 
     Package Package::fromJSON(const std::string &str)
     {
-        Package pack;
+        Package package;
         Poco::JSON::Parser parser;
         Poco::Dynamic::Var result = parser.parse(str);
         Poco::JSON::Object::Ptr object = result.extract<Poco::JSON::Object::Ptr>();
 
-        pack.id() = object->getValue<long>("id");
-        pack.weight() = object->getValue<int>("weight");
-        pack.volume() = object->getValue<int>("volume");
-        pack.is_fragile() = object->getValue<bool>("is_fragile");
-        pack.contains() = object->getValue<std::string>("contains");
+        package.id() = object->getValue<long>("id");
+        package.name() = object->getValue<std::string>("name");
+        package.weight() = object->getValue<std::string>("weight");
+        package.price() = object->getValue<std::string>("price");
+        package.login() = object->getValue<std::string>("login");
 
-        return pack;
+        return package;
     }
 
+    
     std::optional<Package> Package::read_by_id(long id)
     {
         try
@@ -87,12 +85,12 @@ namespace database
             Poco::Data::Session session = database::Database::get().create_session();
             Poco::Data::Statement select(session);
             Package a;
-            select << "SELECT id, weight, volume, is_fragile, contains  FROM Package where id=?",
+            select << "SELECT id, name, weight, price, login FROM Package where id=?",
                 into(a._id),
+                into(a._name),
                 into(a._weight),
-                into(a._volume),
-                into(a._is_fragile),
-                into(a._contains),
+                into(a._price),
+                into(a._login),
                 use(id),
                 range(0, 1); //  iterate over result set one row at a time
 
@@ -114,21 +112,22 @@ namespace database
         return {};
     }
 
-    std::vector<Package> Package::read_by_user_id(long user_id)
+    std::vector<Package> Package::search(std::string login)
     {
         try
         {
             Poco::Data::Session session = database::Database::get().create_session();
-            Poco::Data::Statement select(session);
+            Statement select(session);
             std::vector<Package> result;
             Package a;
-            select << "SELECT id, weight, volume, is_fragile, contains  FROM Package where user_id=?",
+            login += "%";
+            select << "SELECT id, name, weight, price, login FROM Package where login LIKE ?",
                 into(a._id),
+                into(a._name),
                 into(a._weight),
-                into(a._volume),
-                into(a._is_fragile),
-                into(a._contains),
-                use(user_id),
+                into(a._price),
+                into(a._login),
+                use(login),
                 range(0, 1); //  iterate over result set one row at a time
 
             while (!select.done())
@@ -139,106 +138,6 @@ namespace database
             return result;
         }
 
-        catch (Poco::Data::MySQL::ConnectionException &e)
-        {
-            std::cout << "connection:" << e.what() << std::endl;
-        }
-        catch (Poco::Data::MySQL::StatementException &e)
-        {
-            std::cout << "statement:" << e.what() << std::endl;
-        }
-        return {};
-    }
-
-    std::vector<Package> Package::read_all()
-    {
-        try
-        {
-            Poco::Data::Session session = database::Database::get().create_session();
-            Statement select(session);
-            std::vector<Package> result;
-            Package a;
-            select << "SELECT id, weight, volume, is_fragile, contains FROM Package",
-                into(a._id),
-                into(a._weight),
-                into(a._volume),
-                into(a._is_fragile),
-                into(a._contains),
-                range(0, 1); //  iterate over result set one row at a time
-
-            while (!select.done())
-            {
-                if (select.execute())
-                    result.push_back(a);
-            }
-            return result;
-        }
-
-        catch (Poco::Data::MySQL::ConnectionException &e)
-        {
-            std::cout << "connection:" << e.what() << std::endl;
-            throw;
-        }
-        catch (Poco::Data::MySQL::StatementException &e)
-        {
-
-            std::cout << "statement:" << e.what() << std::endl;
-            throw;
-        }
-
-        catch (Poco::Data::MySQL::ConnectionException &e)
-        {
-            std::cout << "connection:" << e.what() << std::endl;
-            throw;
-        }
-        catch (Poco::Data::MySQL::StatementException &e)
-        {
-
-            std::cout << "statement:" << e.what() << std::endl;
-            throw;
-        }
-    }
-
-    int Package::delete_package(long id) {
-        try {
-            Poco::Data::Session session = database::Database::get().create_session();
-            Statement delete_mysql(session);
-
-            delete_mysql << "DELETE FROM Package WHERE id=?", use(id);
-            delete_mysql.execute();
-        }
-        catch (Poco::Data::MySQL::ConnectionException &e)
-        {
-            std::cout << "connection:" << e.what() << std::endl;
-            throw;
-        }
-        catch (Poco::Data::MySQL::StatementException &e)
-        {
-
-            std::cout << "statement:" << e.what() << std::endl;
-            throw;
-        }
-    }
-
-    std::optional<Delivery> Package::get_delivery_data(long id) {
-        try {
-            Poco::Data::Session session = database::Database::get().create_session();
-            Statement select(session);
-            Delivery a;
-
-            select << "SELECT d.id, d.login_sender, d.login_receiver, d.adress, d.datetime FROM Delivery d LEFT JOIN Package p ON d.id = p.delivery_id where p.id=?",
-                into(a.id()),
-                into(a.login_sender()),
-                into(a.login_receiver()),
-                into(a.adress()),
-                into(a.datetime()),
-                use(id),
-                range(0, 1); //  iterate over result set one row at a time
-
-            select.execute();
-            Poco::Data::RecordSet rs(select);
-            if (rs.moveFirst()) return a;
-        }
         catch (Poco::Data::MySQL::ConnectionException &e)
         {
             std::cout << "connection:" << e.what() << std::endl;
@@ -254,16 +153,17 @@ namespace database
 
     void Package::save_to_mysql()
     {
+
         try
         {
             Poco::Data::Session session = database::Database::get().create_session();
             Poco::Data::Statement insert(session);
 
-            insert << "INSERT INTO Package (weight, volume, is_fragile, contains) VALUES(?, ?, ?, ?, ?, ?)",
+            insert << "INSERT INTO Package (name,weight,price,login) VALUES(?, ?, ?, ?)",
+                use(_name),
                 use(_weight),
-                use(_volume),
-                use(_is_fragile),
-                use(_contains);
+                use(_price),
+                use(_login),
 
             insert.execute();
 
@@ -291,43 +191,53 @@ namespace database
         }
     }
 
-    long Package::get_id() const {
+    const std::string &Package::get_login() const
+    {
+        return _login;
+    }
+
+    std::string &Package::login()
+    {
+        return _login;
+    }
+
+    long Package::get_id() const
+    {
         return _id;
-    };
+    }
 
-    int Package::get_weight() const {
+    const std::string &Package::get_name() const
+    {
+        return _name;
+    }
+
+    const std::string &Package::get_weight() const
+    {
         return _weight;
-    };
+    }
 
-    int Package::get_volume() const{
-        return _volume;
-    };
+    const std::string &Package::get_price() const
+    {
+        return _price;
+    }
 
-    bool Package::get_is_fragile() const {
-        return _is_fragile;
-    };
-    
-    const std::string &Package::get_contains() const {
-        return _contains;
-    };
-
-    long &Package::id() {
+    long &Package::id()
+    {
         return _id;
-    };
+    }
 
-    int &Package::weight() {
+    std::string &Package::name()
+    {
+        return _name;
+    }
+
+    std::string &Package::weight()
+    {
         return _weight;
-    };
+    }
 
-    int &Package::volume() {
-        return _volume;
-    };
-
-    bool &Package::is_fragile() {
-        return _is_fragile;
-    };
-    
-    std::string &Package::contains() {
-        return _contains;
-    };
+    std::string &Package::price()
+    {
+        return _price;
+    }
 }

@@ -18,20 +18,22 @@ using Poco::Data::Statement;
 
 namespace database
 {
+
     void Delivery::init()
     {
         try
         {
+
             Poco::Data::Session session = database::Database::get().create_session();
             Statement create_stmt(session);
             create_stmt << "CREATE TABLE IF NOT EXISTS `Delivery` (`id` INT NOT NULL AUTO_INCREMENT,"
-                        << "`_login_sender` VARCHAR(1024) NOT NULL"
-                        << "`_login_receiver` VARCHAR(1024) NOT NULL"
-                        << "`_adress` VARCHAR(1024) NOT NULL"
-                        << "`_datetime` VARCHAR(1024) NOT NULL"
-                        << "FOREIGN KEY (`user_id`) REFERENCES User (id)"
-                        << "FOREIGN KEY (`delivery_id`) REFERENCES Delivery (id)"
-                        << "PRIMARY KEY (`id`);",
+                        << "`recipient_name` VARCHAR(256) NOT NULL,"
+                        << "`sender_name` VARCHAR(256) NOT NULL,"
+                        << "`recipient_addres` VARCHAR(256) NOT NULL,"
+                        << "`sender_addres` VARCHAR(256) NOT NULL,"
+                        << "`date` VARCHAR(256) NOT NULL,"
+                        << "`state` VARCHAR(256) NULL,"
+                        << "PRIMARY KEY (`id`));",
                 now;
         }
 
@@ -53,28 +55,35 @@ namespace database
         Poco::JSON::Object::Ptr root = new Poco::JSON::Object();
 
         root->set("id", _id);
-        root->set("login_sender", _login_sender);
-        root->set("login_receiver", _login_receiver);
-        root->set("adress", _adress);
-        root->set("datetime", _datetime);
+        root->set("recipient_name", _recipient_name);
+        root->set("sender_name", _sender_name);
+        root->set("recipient_addres", _recipient_addres);
+        root->set("sender_addres", _sender_addres);
+        root->set("date", _date);
+        root->set("state", _state);
+
         return root;
     }
 
     Delivery Delivery::fromJSON(const std::string &str)
     {
-        Delivery deliv;
+        Delivery user;
         Poco::JSON::Parser parser;
         Poco::Dynamic::Var result = parser.parse(str);
         Poco::JSON::Object::Ptr object = result.extract<Poco::JSON::Object::Ptr>();
 
-        deliv.id() = object->getValue<long>("id");
-        deliv.login_sender() = object->getValue<std::string>("login_sender");
-        deliv.login_receiver() = object->getValue<std::string>("login_receiver");
-        deliv.adress() = object->getValue<std::string>("adress");
-        deliv.datetime() = object->getValue<std::string>("datetime");
-        return deliv;
+        user.id() = object->getValue<long>("id");
+        user.recipient_name() = object->getValue<std::string>("recipient_name");
+        user.sender_name() = object->getValue<std::string>("sender_name");
+        user.recipient_addres() = object->getValue<std::string>("recipient_addres");
+        user.sender_addres() = object->getValue<std::string>("sender_addres");
+        user.date() = object->getValue<std::string>("date");
+        user.state() = object->getValue<std::string>("state");
+
+        return user;
     }
 
+    
     std::optional<Delivery> Delivery::read_by_id(long id)
     {
         try
@@ -82,12 +91,9 @@ namespace database
             Poco::Data::Session session = database::Database::get().create_session();
             Poco::Data::Statement select(session);
             Delivery a;
-            select << "SELECT id, login_sender, login_receiver, adress, datetime FROM Delivery where id=?",
+            select << "SELECT id, state FROM Delivery where id=?",
                 into(a._id),
-                into(a._login_sender),
-                into(a._login_receiver),
-                into(a._adress),
-                into(a._datetime),
+                into(a._state),
                 use(id),
                 range(0, 1); //  iterate over result set one row at a time
 
@@ -109,29 +115,29 @@ namespace database
         return {};
     }
 
-    std::vector<Delivery> Delivery::read_by_reciever(std::string login_receiver) {
+    std::optional<Delivery> Delivery::set_state(long id, std::string state)
+    {
         try
         {
             Poco::Data::Session session = database::Database::get().create_session();
             Poco::Data::Statement select(session);
             Delivery a;
-            std::vector<Delivery> result;
-
-            select << "SELECT id, login_sender, login_receiver, adress, datetime FROM Delivery where login_receiver=?",
-                into(a._id),
-                into(a._login_sender),
-                into(a._login_receiver),
-                into(a._adress),
-                into(a._datetime),
-                use(login_receiver),
+            select << "UPDATE Delivery SET state=? where id=?",
+                use(state),
+                use(id),
                 range(0, 1); //  iterate over result set one row at a time
-
-            while (!select.done())
-            {
-                if (select.execute())
-                    result.push_back(a);
-            }
-            return result;
+            select.execute();
+            
+            Poco::Data::Session session2 = database::Database::get().create_session();
+            Poco::Data::Statement select2(session2);
+            select2 << "SELECT state FROM Delivery where id=?",
+                into(a._state),
+                use(id),
+                range(0, 1);
+            a._id = id;
+            select2.execute();
+            Poco::Data::RecordSet rs(select2);
+            if (a._state==state) return a;
         }
 
         catch (Poco::Data::MySQL::ConnectionException &e)
@@ -147,97 +153,31 @@ namespace database
         return {};
     }
 
-    std::vector<Delivery> Delivery::read_by_sender(std::string login_sender) {
+    std::vector<Delivery> Delivery::read_by_names(std::string recipient_name,std::string sender_name)
+    {
         try
         {
             Poco::Data::Session session = database::Database::get().create_session();
             Poco::Data::Statement select(session);
-            Delivery a;
             std::vector<Delivery> result;
-
-            select << "SELECT id, login_sender, login_receiver, adress, datetime FROM Delivery where login_sender=?",
+            Delivery a;
+            select << "SELECT id, recipient_name, sender_name, recipient_addres, sender_addres, date, state FROM Delivery where recipient_name=? and sender_name=?",
                 into(a._id),
-                into(a._login_sender),
-                into(a._login_receiver),
-                into(a._adress),
-                into(a._datetime),
-                use(login_sender),
+                into(a._recipient_name),
+                into(a._sender_name),
+                into(a._recipient_addres),
+                into(a._sender_addres),
+                into(a._date),
+                into(a._state),
+                use(recipient_name),
+                use(sender_name),
                 range(0, 1); //  iterate over result set one row at a time
-
             while (!select.done())
             {
                 if (select.execute())
                     result.push_back(a);
             }
             return result;
-        }
-
-        catch (Poco::Data::MySQL::ConnectionException &e)
-        {
-            std::cout << "connection:" << e.what() << std::endl;
-        }
-        catch (Poco::Data::MySQL::StatementException &e)
-        {
-
-            std::cout << "statement:" << e.what() << std::endl;
-            
-        }
-        return {};
-    }
-
-    std::vector<Delivery> Delivery::read_all() {
-        try
-        {
-            Poco::Data::Session session = database::Database::get().create_session();
-            Poco::Data::Statement select(session);
-            Delivery a;
-            std::vector<Delivery> result;
-
-            select << "SELECT id, login_sender, login_receiver, adress, datetime FROM Delivery",
-                into(a._id),
-                into(a._login_sender),
-                into(a._login_receiver),
-                into(a._adress),
-                into(a._datetime),
-                range(0, 1); //  iterate over result set one row at a time
-
-            while (!select.done())
-            {
-                if (select.execute())
-                    result.push_back(a);
-            }
-            return result;
-        }
-
-        catch (Poco::Data::MySQL::ConnectionException &e)
-        {
-            std::cout << "connection:" << e.what() << std::endl;
-        }
-        catch (Poco::Data::MySQL::StatementException &e)
-        {
-
-            std::cout << "statement:" << e.what() << std::endl;
-            
-        }
-        return {};
-    }
-
-    std::vector<Package> Delivery::get_packages(long id) {
-        Poco::Data::Session session = database::Database::get().create_session();
-        Statement select(session);
-        std::vector<Package> result;
-
-        
-    }
-
-    int Delivery::delete_delivery(long id) {
-        try {
-            Poco::Data::Session session = database::Database::get().create_session();
-            Statement delete_mysql(session);
-
-            delete_mysql << "DELETE FROM Delivery WHERE id=?",
-            use(id);
-            delete_mysql.execute();
         }
 
         catch (Poco::Data::MySQL::ConnectionException &e)
@@ -251,21 +191,23 @@ namespace database
             std::cout << "statement:" << e.what() << std::endl;
             throw;
         }
-    };
+    }
 
     void Delivery::save_to_mysql()
     {
+
         try
         {
             Poco::Data::Session session = database::Database::get().create_session();
             Poco::Data::Statement insert(session);
 
-            insert << "INSERT INTO Delivery (id, login_sender, login_receiver, adress, datetime) VALUES(?, ?, ?, ?, ?)",
-                use(_id),
-                use(_login_sender),
-                use(_login_receiver),
-                use(_adress),
-                use(_datetime),
+            insert << "INSERT INTO Delivery (recipient_name,sender_name,recipient_addres,sender_addres,date,state) VALUES(?, ?, ?, ?, ?, ?)",
+                use(_recipient_name),
+                use(_sender_name),
+                use(_recipient_addres),
+                use(_sender_addres),
+                use(_date),
+                use(_state);
             insert.execute();
 
             Poco::Data::Statement select(session);
@@ -292,44 +234,71 @@ namespace database
         }
     }
 
-    long Delivery::get_id() const {
+    const std::string &Delivery::get_recipient_name() const
+    {
+        return _recipient_name;
+    }
+
+    const std::string &Delivery::get_sender_name() const
+    {
+        return _sender_name;
+    }
+
+    std::string &Delivery::recipient_name()
+    {
+        return _recipient_name;
+    }
+
+    std::string &Delivery::sender_name()
+    {
+        return _sender_name;
+    }
+
+    long Delivery::get_id() const
+    {
         return _id;
-    };
+    }
 
-    const std::string &Delivery::get_login_sender() const {
-        return _login_sender;
-    };
+    const std::string &Delivery::get_recipient_addres() const
+    {
+        return _recipient_addres;
+    }
 
-    const std::string &Delivery::get_login_receiver() const {
-        return _login_receiver;
-    };
+    const std::string &Delivery::get_sender_addres() const
+    {
+        return _sender_addres;
+    }
 
-    const std::string &Delivery::get_adress() const {
-        return _adress;
-    };
+    const std::string &Delivery::get_date() const
+    {
+        return _date;
+    }
+        const std::string &Delivery::get_state() const
+    {
+        return _state;
+    }
 
-    const std::string &Delivery::get_datetime() const {
-        return _datetime;
-    };
-
-    long &Delivery::id() {
+    long &Delivery::id()
+    {
         return _id;
-    };
+    }
 
-    std::string &Delivery::login_sender(){
-        return _login_sender;
-    };
+    std::string &Delivery::recipient_addres()
+    {
+        return _recipient_addres;
+    }
 
-    std::string &Delivery::login_receiver() {
-        return _login_receiver;
-    };
+    std::string &Delivery::sender_addres()
+    {
+        return _sender_addres;
+    }
 
-    std::string &Delivery::adress() {
-        return _adress;
-    };
-
-    std::string &Delivery::datetime() {
-        return _datetime;
-    };
-
+    std::string &Delivery::date()
+    {
+        return _date;
+    }
+    std::string &Delivery::state()
+    {
+        return _state;
+    }
 }

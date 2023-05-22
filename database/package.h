@@ -1,7 +1,5 @@
-#ifndef PACKAGE_H
-#define PACKAGE_H
-
-#include "delivery.h"
+#ifndef AUTHOR_H
+#define AUTHOR_H
 
 #include <string>
 #include <vector>
@@ -10,38 +8,33 @@
 
 namespace database
 {
-    class Package {
+    class Package{
         private:
             long _id;
-            int _weight;
-            int _volume;
-            bool _is_fragile;
-            std::string _contains;
-            Package();
+            std::string _name;
+            std::string _weight;
+            std::string _price;
+            std::string _login;
 
         public:
 
             static Package fromJSON(const std::string & str);
 
-            long get_id() const;
-            int get_weight() const;
-            int get_volume() const;
-            bool get_is_fragile() const;
-            const std::string &get_contains() const;
+            long             get_id() const;
+            const std::string &get_name() const;
+            const std::string &get_weight() const;
+            const std::string &get_price() const;
+            const std::string &get_login() const;
 
-            //для редактирования
-            long& id();
-            int &weight();
-            int &volume();
-            bool &is_fragile();
-            std::string &contains();
+            long&        id();
+            std::string &name();
+            std::string &weight();
+            std::string &price();
+            std::string &login();
 
             static void init();
             static std::optional<Package> read_by_id(long id);
-            static std::vector<Package> read_by_user_id(long user_id);
-            static std::vector<Package> read_all();
-            static int delete_package(long id);
-            static std::optional<Delivery> get_delivery_data(long id);
+            static std::vector<Package> search(std::string login);
             void save_to_mysql();
 
             Poco::JSON::Object::Ptr toJSON() const;

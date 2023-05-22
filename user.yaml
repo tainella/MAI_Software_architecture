@@ -7,7 +7,7 @@ servers:
   - url: http://localhost:8080
     description: Example server
 paths:
-  /search:
+  /search_name_surname:
     get:
       summary: Поиск пользователей по маске имени и фамилии
       parameters:
@@ -87,7 +87,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /read_by_id:
+  /user_by_id:
     get:
       summary: Чтение информации о пользователе
       parameters:
@@ -132,14 +132,8 @@ paths:
         required: true
         schema:
           type: string
-      - name: email
-        description: Электронный адрес пользователя
-        in: query
-        required: true
-        schema:
-          type: string
-      - name: title
-        description: Обращение к пользователю (г-н/г-жа)
+      - name: addres
+        description: Адрес пользователя
         in: query
         required: true
         schema:
@@ -190,8 +184,7 @@ components:
         - id
         - first_name
         - last_name
-        - email
-        - title
+        - addres
         - login
         - password
       properties:
@@ -201,9 +194,7 @@ components:
           type: string
         last_name:
           type: string
-        email:
-          type: string
-        title:
+        addres:
           type: string
         login:
           type: string
