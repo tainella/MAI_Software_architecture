@@ -264,7 +264,7 @@ namespace database
             Poco::Data::Session session = database::Database::get().create_session();
             Poco::Data::Statement insert(session);
             std::cout << "1!";
-            insert << "INSERT INTO User (first_name,last_name,addres,login,password) VALUES(?, ?, ?, ?, ?)",
+            insert << "INSERT INTO `User` (first_name,last_name,addres,login,password) VALUES(?, ?, ?, ?, ?)",
                 use(_first_name),
                 use(_last_name),
                 use(_addres),
