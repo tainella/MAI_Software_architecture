@@ -220,12 +220,12 @@ public:
             }
             else if (hasSubstr(request.getURI(), "/add_user") &&
                     form.has("first_name") && form.has("last_name") && 
-                    form.has("addres") && form.has("login") && form.has("password"))
+                    form.has("email") && form.has("login") && form.has("password"))
             {
                 database::User user;
                 user.first_name() = form.get("first_name");
                 user.last_name() = form.get("last_name");
-                user.addres() = form.get("addres");
+                user.email() = form.get("email");
                 user.login() = form.get("login");
                 user.password() = form.get("password");
 

@@ -132,7 +132,7 @@ paths:
         required: true
         schema:
           type: string
-      - name: addres
+      - name: email
         description: Адрес пользователя
         in: query
         required: true
@@ -184,7 +184,7 @@ components:
         - id
         - first_name
         - last_name
-        - addres
+        - email
         - login
         - password
       properties:
@@ -194,7 +194,7 @@ components:
           type: string
         last_name:
           type: string
-        addres:
+        email:
           type: string
         login:
           type: string
