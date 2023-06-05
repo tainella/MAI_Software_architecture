@@ -222,7 +222,6 @@ public:
                     form.has("first_name") && form.has("last_name") && 
                     form.has("addres") && form.has("login") && form.has("password"))
             {
-
                 database::User user;
                 user.first_name() = form.get("first_name");
                 user.last_name() = form.get("last_name");
@@ -233,7 +232,6 @@ public:
                 bool check_result = true;
                 std::string message;
                 std::string reason;
-
                 std::optional<database::User> result = database::User::read_by_login(user.login());
                 if (result)
                 {
@@ -247,14 +245,12 @@ public:
                     message += reason;
                     message += "<br>";
                 }
-
                 if (!check_name(user.get_last_name(), reason))
                 {
                     check_result = false;
                     message += reason;
                     message += "<br>";
                 }
-
                 if (check_result)
                 {
                     user.save_to_mysql();
@@ -286,7 +282,7 @@ public:
         root->set("type", "/errors/not_found");
         root->set("title", "Internal exception");
         root->set("status", Poco::Net::HTTPResponse::HTTPStatus::HTTP_NOT_FOUND);
-        root->set("detail", "request ot found");
+        root->set("detail", "request not found");
         root->set("instance", "/user");
         std::ostream &ostr = response.send();
         Poco::JSON::Stringifier::stringify(root, ostr);

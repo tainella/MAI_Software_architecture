@@ -263,25 +263,27 @@ namespace database
         {
             Poco::Data::Session session = database::Database::get().create_session();
             Poco::Data::Statement insert(session);
-
+            std::cout << "1!";
             insert << "INSERT INTO User (first_name,last_name,addres,login,password) VALUES(?, ?, ?, ?, ?)",
                 use(_first_name),
                 use(_last_name),
                 use(_addres),
                 use(_login),
                 use(_password);
-
+            std::cout << "2!";
             insert.execute();
-
+            std::cout << "3!";
             Poco::Data::Statement select(session);
+            std::cout << "4!";
             select << "SELECT LAST_INSERT_ID()",
                 into(_id),
                 range(0, 1); //  iterate over result set one row at a time
-
+            std::cout << "5!";
             if (!select.done())
             {
                 select.execute();
             }
+            std::cout << "7!";
             std::cout << "inserted:" << _id << std::endl;
         }
         catch (Poco::Data::MySQL::ConnectionException &e)
